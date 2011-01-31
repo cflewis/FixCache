@@ -28,10 +28,13 @@ public class Simulator {
 //        + "and actions.commit_id=? and content_loc.commit_id=? "
 //        + "and actions.file_id in( "
 //        + "select file_id from file_types where type='code') order by loc DESC";
-    static final String findHunkId = "select hunks.id from hunks, files " +
-    		"where hunks.file_id=files.id and file_name =? and commit_id =?";
-    static final String findBugIntroCdate = "select date from hunk_blames, scmlog "
-        + "where hunk_id =? and hunk_blames.bug_commit_id=scmlog.id";
+    static final String findBugIntroCdate = "select max(date) from hunks, hunk_blames, scmlog, actions_cache " +
+    		"where hunk_blames.bug_commit_id=scmlog.id and hunk_blames.hunk_id=hunks.id and " +
+    		"hunks.file_id=actions_cache.file_id and actions_cache.file_name=? and actions_cache.commit_id=?";
+//    static final String findHunkId = "select hunks.id from hunks, files " +
+//    		"where hunks.file_id=files.id and file_name =? and commit_id =?";
+//    static final String findBugIntroCdate = "select date from hunk_blames, scmlog "
+//        + "where hunk_id =? and hunk_blames.bug_commit_id=scmlog.id";
     static final String findPid = "select id from repositories where id=?";
     static final String dropCacheTable = "drop table if exists actions_cache";
     static final String createCacheTable = "create table actions_cache " +
@@ -164,7 +167,7 @@ public class Simulator {
         try {
             findFileQuery = conn.prepareStatement(findFile);
             findCommitQuery = conn.prepareStatement(findCommit);
-            findHunkIdQuery = conn.prepareStatement(findHunkId);
+//            findHunkIdQuery = conn.prepareStatement(findHunkId);
             findBugIntroCdateQuery = conn.prepareStatement(findBugIntroCdate);
             //findFileCountTimeQuery = conn.prepareStatement(findFileCountTime);
         } catch (SQLException e) {

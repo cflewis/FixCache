@@ -23,18 +23,11 @@ public class Simulator {
     static final String findFile = "select file_name, type from actions_cache, content_loc" +
     		" where actions_cache.file_id=content_loc.file_id and actions_cache.commit_id=? and " +
     		"content_loc.commit_id=? order by loc DESC";
-//    static final String findFile = "select file_name, type from actions, content_loc, files "
-//        + "where actions.file_id=content_loc.file_id and actions.file_id=files.id "
-//        + "and actions.commit_id=? and content_loc.commit_id=? "
-//        + "and actions.file_id in( "
-//        + "select file_id from file_types where type='code') order by loc DESC";
-    static final String findBugIntroCdate = "select max(date) from hunks, hunk_blames, scmlog, actions_cache " +
-    		"where hunk_blames.bug_commit_id=scmlog.id and hunk_blames.hunk_id=hunks.id and " +
-    		"hunks.file_id=actions_cache.file_id and actions_cache.file_name=? and actions_cache.commit_id=?";
-//    static final String findHunkId = "select hunks.id from hunks, files " +
-//    		"where hunks.file_id=files.id and file_name =? and commit_id =?";
-//    static final String findBugIntroCdate = "select date from hunk_blames, scmlog "
-//        + "where hunk_id =? and hunk_blames.bug_commit_id=scmlog.id";
+    static final String findHunkId = "select hunks.id from hunks, files, file_types " +
+    		"where hunks.file_id=files.id and files.id=file_types.id and file_types.type='code'" +
+    		" and file_name =? and commit_id =?";
+    static final String findBugIntroCdate = "select date from hunk_blames, scmlog "
+        + "where hunk_id =? and hunk_blames.bug_commit_id=scmlog.id";
     static final String findPid = "select id from repositories where id=?";
     static final String dropCacheTable = "drop table if exists actions_cache";
     static final String createCacheTable = "create table actions_cache " +
@@ -45,26 +38,14 @@ public class Simulator {
     static final String findFileCount = "select count(distinct(file_name)) " +
     		"from files, file_types "
         + "where files.id = file_types.file_id and type = 'code' and repository_id=?";
-    static final String findFileCountTime =  "select(" +
-            "(select count(distinct(file_name)) from files, actions, scmlog, " +
-                    "file_types where files.id=file_types.file_id and actions.commit_id = " +
-                    "scmlog.id and actions.file_id = " +
-                    " file_types.file_id and file_types.type = 'code' and scmlog.repository_id = " +
-                    "? and scmlog.date < ?) - (" +
-                    "select count(distinct(file_name)) from files, actions, scmlog, " +
-                    "file_types where files.id=file_types.file_id and actions.commit_id = " +
-                    "scmlog.id and actions.file_id = " +
-                    " file_types.file_id and file_types.type = 'code' and scmlog.repository_id = " +
-                    "? and scmlog.date < ? and actions.type = 'D')) as total_files";
     private PreparedStatement findCommitQuery;
     private PreparedStatement findFileQuery;
-//    private PreparedStatement findHunkIdQuery;
+    private PreparedStatement findHunkIdQuery;
     private PreparedStatement findBugIntroCdateQuery;
     private static PreparedStatement findPidQuery;
     private static PreparedStatement dropCacheTableQuery;
     private static PreparedStatement createCacheTableQuery;
     private static PreparedStatement findFileCountQuery;
-//    private PreparedStatement findFileCountTimeQuery;
 
     /**
      * From the actions table. See the cvsanaly manual
@@ -167,9 +148,8 @@ public class Simulator {
         try {
             findFileQuery = conn.prepareStatement(findFile);
             findCommitQuery = conn.prepareStatement(findCommit);
-//            findHunkIdQuery = conn.prepareStatement(findHunkId);
+            findHunkIdQuery = conn.prepareStatement(findHunkId);
             findBugIntroCdateQuery = conn.prepareStatement(findBugIntroCdate);
-            //findFileCountTimeQuery = conn.prepareStatement(findFileCountTime);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -511,13 +491,27 @@ public class Simulator {
 
     public String getBugIntroCdate(String fileName, int commitId) {
 
-        // XXX optimize this code?
+        // XXX optimize this code?       
         String bugIntroCdate = "";
+        int hunkId;
+        ResultSet r = null;
+        ResultSet r1 = null;
         try {
-            findBugIntroCdateQuery.setString(1, fileName); // XXX fix query 
-            findBugIntroCdateQuery.setInt(2, commitId);
-            bugIntroCdate = Util.Database.getStringResult(findBugIntroCdateQuery);
-           } catch (Exception e) {
+            findHunkIdQuery.setString(1, fileName); // XXX fix query
+            findHunkIdQuery.setInt(2, commitId);
+            r = findHunkIdQuery.executeQuery();
+            while (r.next()) {
+                hunkId = r.getInt(1);
+
+                findBugIntroCdateQuery.setInt(1, hunkId);
+                r1 = findBugIntroCdateQuery.executeQuery();
+                while (r1.next()) {
+                    if (r1.getString(1).compareTo(bugIntroCdate) > 0) {
+                        bugIntroCdate = r1.getString(1);
+                    }
+                }
+            }
+        } catch (Exception e) {
             System.out.println(e);
             System.exit(0);
         }

@@ -58,7 +58,7 @@ public class Simulator {
                     "? and scmlog.date < ? and actions.type = 'D')) as total_files";
     private PreparedStatement findCommitQuery;
     private PreparedStatement findFileQuery;
-    private PreparedStatement findHunkIdQuery;
+//    private PreparedStatement findHunkIdQuery;
     private PreparedStatement findBugIntroCdateQuery;
     private static PreparedStatement findPidQuery;
     private static PreparedStatement dropCacheTableQuery;
@@ -513,29 +513,14 @@ public class Simulator {
 
         // XXX optimize this code?
         String bugIntroCdate = "";
-        int hunkId;
-        ResultSet r = null;
-        ResultSet r1 = null;
         try {
-            findHunkIdQuery.setString(1, fileName); // XXX fix query 
-            findHunkIdQuery.setInt(2, commitId);
-            r = findHunkIdQuery.executeQuery();
-            while (r.next()) {
-                hunkId = r.getInt(1);
-
-                findBugIntroCdateQuery.setInt(1, hunkId);
-                r1 = findBugIntroCdateQuery.executeQuery();
-                while (r1.next()) {
-                    if (r1.getString(1).compareTo(bugIntroCdate) > 0) {
-                        bugIntroCdate = r1.getString(1);
-                    }
-                }
-            }
-        } catch (Exception e) {
+            findBugIntroCdateQuery.setString(1, fileName); // XXX fix query 
+            findBugIntroCdateQuery.setInt(2, commitId);
+            bugIntroCdate = Util.Database.getStringResult(findBugIntroCdateQuery);
+           } catch (Exception e) {
             System.out.println(e);
             System.exit(0);
         }
-
         return bugIntroCdate;
     }
 

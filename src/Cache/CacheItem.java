@@ -12,7 +12,7 @@ public class CacheItem {
      *  Database: Setting up the SQL statement strings used in this class.
      *  These are static PreparedStatements that can be shared across all cache items.
      */
-    
+    //TODO improve the query not to use "in"
     static Connection conn = DatabaseManager.getConnection();
     static final String findNumberOfAuthors = 
         "select count(id) from people " +

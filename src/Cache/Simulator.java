@@ -23,9 +23,8 @@ public class Simulator {
     static final String findFile = "select file_name, type from actions_cache, content_loc" +
     		" where actions_cache.file_id=content_loc.file_id and actions_cache.commit_id=? and " +
     		"content_loc.commit_id=? order by loc DESC";
-    static final String findHunkId = "select hunks.id from hunks, files, file_types " +
-    		"where hunks.file_id=files.id and files.id=file_types.id and file_types.type='code'" +
-    		" and file_name =? and commit_id =?";
+    static final String findHunkId = "select hunks.id from hunks, files " +
+    		"where hunks.file_id=files.id  and file_name =? and commit_id =?";
     static final String findBugIntroCdate = "select date from hunk_blames, scmlog "
         + "where hunk_id =? and hunk_blames.bug_commit_id=scmlog.id";
     static final String findPid = "select id from repositories where id=?";

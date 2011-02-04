@@ -14,22 +14,31 @@ public class CacheItem {
      */
     //TODO improve the query not to use "in"
     static Connection conn = DatabaseManager.getConnection();
-    static final String findNumberOfAuthors = 
-        "select count(id) from people " +
-        "where id in( " +
-            "select author_id from scmlog, actions, files" +
-            " where scmlog.id = actions.commit_id " +
-                "and date between ? and ? and actions.file_id=files.id and file_name = ?)";
-    static final String findNumberOfChanges = 
-        "select count(actions.id) " +
-        "from actions, scmlog, files" +
-        " where actions.commit_id = scmlog.id " +
-        "and date between ? and ? and actions.file_id=files.id and file_name=?";
-    static final String findNumberOfBugs = 
-        "select count(commit_id) from actions, files " +
-        "where actions.file_id=files.id and file_name=? and commit_id in " +
-            "(select id from scmlog " +
-            "where is_bug_fix=1 and date between ? and ?)";
+    static final String findNumberOfAuthors = "select count(distinct(author_id)) " +
+    		"from scmlog, actions_cache where scmlog.id=actions_cache.commit_id and " +
+    		"date between ? and ? and file_name = ?";
+//    static final String findNumberOfAuthors = 
+//        "select count(id) from people " +
+//        "where id in( " +
+//            "select author_id from scmlog, actions, files" +
+//            " where scmlog.id = actions.commit_id " +
+//                "and date between ? and ? and actions.file_id=files.id and file_name = ?)";
+    static final String findNumberOfChanges = "select count(actions_cache.file_id) " +
+    		"from scmlog, actions_cache where scmlog.id=actions_cache.commit_id and " +
+    		"date between ? and ? and file_name = ?";
+//    static final String findNumberOfChanges = 
+//        "select count(actions.id) " +
+//        "from actions, scmlog, files" +
+//        " where actions.commit_id = scmlog.id " +
+//        "and date between ? and ? and actions.file_id=files.id and file_name=?";
+    static final String findNumberOfBugs = "select count(actions_cache.file_id " +
+    		"from scmlog, actions_cache where scmlog.id = actions_cache.commit_id " +
+    		"and file_name=? and date between ? and ? and is_bug_fix=1";
+//    static final String findNumberOfBugs = 
+//        "select count(commit_id) from actions, files " +
+//        "where actions.file_id=files.id and file_name=? and commit_id in " +
+//            "(select id from scmlog " +
+//            "where is_bug_fix=1 and date between ? and ?)";
     static final String findLoc = 
         "select loc from content_loc, files where content_loc.file_id=files.id and" +
         " file_name=? and commit_id =?";

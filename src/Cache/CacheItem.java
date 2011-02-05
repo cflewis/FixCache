@@ -14,8 +14,9 @@ public class CacheItem {
      */
     //TODO improve the query not to use "in"
     static Connection conn = DatabaseManager.getConnection();
-    static final String findNumberOfAuthors = "select count(distinct(author_id)) " +
-    		"from scmlog, actions_cache where scmlog.id=actions_cache.commit_id and " +
+    static final String findNumberOfAuthors = "select count(people.id) " +
+    		"from scmlog, actions_cache, people " +
+    		"where scmlog.id=actions_cache.commit_id and scmlog.author_id=people.id and " +
     		"date between ? and ? and file_name = ?";
 //    static final String findNumberOfAuthors = 
 //        "select count(id) from people " +

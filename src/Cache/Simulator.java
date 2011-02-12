@@ -20,15 +20,13 @@ public class Simulator {
     
     static final String findCommit = "select id, date, is_bug_fix from scmlog "
         + "where repository_id =? and date between ? and ? order by date ASC";
-    static final String findFile = "select file_name, actions.type " +
-    		"from actions, content_loc, files, file_types "
-        + "where actions.file_id=content_loc.file_id and actions.file_id=files.id "
-        + "and actions.commit_id=? and content_loc.commit_id=? "
-        + "and actions.file_id=file_types.file_id and file_types.type='code' order by loc DESC";
-    static final String findHunkId = "select hunks.id from hunks, files " +
-    		"where hunks.file_id=files.id and file_name =? and commit_id =?";
-    static final String findBugIntroCdate = "select date from hunk_blames, scmlog "
-        + "where hunk_id =? and hunk_blames.bug_commit_id=scmlog.id";
+    static final String findFile = "select file_name, action_type " +
+    		"from _actions_cache where commit_id=?  order by loc DESC";
+    static final String findHunkId = "select _hunks.id from _hunks, _actions_cache " +
+    		"where _hunks.file_id=_actions_cache.file_id and file_name =? " +
+    		"and _hunks.commit_id =?";
+    static final String findBugIntroCdate = "select date from _hunk_blames, _scmlog_cache "
+        + "where _hunk_blames.hunk_id =? and _hunk_blames.bug_commit_id=_scmlog_cache.id";
     static final String findPid = "select id from repositories where id=?";
     static final String findFileCount = "select count(distinct(file_name)) from files, file_types "
         + "where files.id = file_types.file_id and type = 'code' and repository_id=?";
@@ -235,7 +233,6 @@ public class Simulator {
                 isBugFix = allCommits.getBoolean(3);
 
                 findFileQuery.setInt(1, cid);
-                findFileQuery.setInt(2, cid);
 
                 final ResultSet files = findFileQuery.executeQuery();
                 // loop through those file ids

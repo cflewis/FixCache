@@ -18,7 +18,7 @@ public class Simulator {
      * Database prepared sql statements.
      */
     
-    static final String findCommit = "select id, date, is_bug_fix from scmlog "
+    static final String findCommit = "select id, date, is_bug_fix from _scmlog_cache "
         + "where repository_id =? and date between ? and ? order by date ASC";
     static final String findFile = "select file_name, action_type " +
     		"from _actions_cache where commit_id=?  order by loc DESC";

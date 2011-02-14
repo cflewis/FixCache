@@ -185,18 +185,18 @@ public class Simulator {
      */
     // XXX move hit and miss to the cache?
     // could add if (reas == BugEntity) logic to add() code
-    public void loadBuggyEntity(String fileId, int cid, String commitDate, String intro_cdate) {
+    public void loadBuggyEntity(String fileName, int cid, String commitDate, String intro_cdate) {
 
         bugcount++;
-        if (cache.contains(fileId))
+        if (cache.contains(fileName))
             hit++; 
         else
             miss++;
 
-        cache.add(fileId, cid, commitDate, CacheItem.CacheReason.BugEntity);
+        cache.add(fileName, cid, commitDate, CacheItem.CacheReason.BugEntity);
 
         // add the co-changed files as well
-        ArrayList<String> cochanges = CoChange.getCoChangeFileList(fileId,
+        ArrayList<String> cochanges = CoChange.getCoChangeFileList(fileName,
                 cache.startDate, intro_cdate, blocksize, pid);
         cache.add(cochanges, cid, commitDate, CacheItem.CacheReason.CoChange);
     }
@@ -227,13 +227,13 @@ public class Simulator {
             allCommits = findCommitQuery.executeQuery();
 
             while (allCommits.next()) {
+                
                 incCommits();
                 cid = allCommits.getInt(1);
                 cdate = allCommits.getString(2);
                 isBugFix = allCommits.getBoolean(3);
-
                 findFileQuery.setInt(1, cid);
-
+                        
                 final ResultSet files = findFileQuery.executeQuery();
                 // loop through those file ids
                 while (files.next()) {
@@ -297,7 +297,7 @@ public class Simulator {
     }
 
     private int processOneFile(int cid, String cdate, boolean isBugFix,
-            String file_id, FileType type, int numprefetch) {
+            String fileName, FileType type, int numprefetch) {
         filesProcessed++;
         
         switch (type) {
@@ -308,21 +308,21 @@ public class Simulator {
         case A:
             if (numprefetch < prefetchsize) {
                 numprefetch++;
-                cache.add(file_id, cid, cdate, CacheItem.CacheReason.NewEntity);
+                cache.add(fileName, cid, cdate, CacheItem.CacheReason.NewEntity);
             }
             break;
         case D:
-            if(cache.contains(file_id)){
-                this.cache.remove(file_id, cdate);
+            if(cache.contains(fileName)){
+                this.cache.remove(fileName, cdate);
             }
             break;
         case M: // modified
             if (isBugFix) {
-                String intro_cdate = this.getBugIntroCdate(file_id, cid);
-                this.loadBuggyEntity(file_id, cid, cdate, intro_cdate);
+                String intro_cdate = this.getBugIntroCdate(fileName, cid);
+                this.loadBuggyEntity(fileName, cid, cdate, intro_cdate);
             } else if (numprefetch < prefetchsize) {
                 numprefetch++;
-                cache.add(file_id, cid, cdate, CacheItem.CacheReason.ModifiedEntity);
+                cache.add(fileName, cid, cdate, CacheItem.CacheReason.ModifiedEntity);
             }
         }
         return numprefetch;
@@ -589,8 +589,9 @@ public class Simulator {
             printUsage();
             System.exit(2);
         }
-
+        long startTime = System.currentTimeMillis(); 
         checkParameter(start, end, pid);
+        System.out.println("checkParameter------"+(System.currentTimeMillis()-startTime));
         /**
          * Create a new simulator and run simulation.
          */
@@ -609,6 +610,7 @@ public class Simulator {
             if (monthly) sim.outputMultiple();
             sim.initialPreLoad();
             sim.simulate();
+            System.out.println("simulate"+(System.currentTimeMillis()-startTime));
 
             if(sim.saveToFile==true)
             {

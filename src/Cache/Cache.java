@@ -74,8 +74,8 @@ public class Cache implements Iterable<CacheItem>{
      * The only method that decreases size.
      * @param fileid 
      */
-    public void remove(String fileid, String cdate) {
-        cacheTable.get(fileid).removeFromCache(cdate);
+    public void remove(String fileName, String cdate) {
+        cacheTable.get(fileName).removeFromCache(cdate);
         size--;
     }
 
@@ -177,8 +177,8 @@ public class Cache implements Iterable<CacheItem>{
      * @param eid -- entity id
      * @return whether that entity is in the cache
      */
-    public boolean contains(String eid){
-        final CacheItem ci = cacheTable.get(eid);
+    public boolean contains(String fileName){
+        final CacheItem ci = cacheTable.get(fileName);
         if (ci == null)
             return false;
         else // in cacheTable

@@ -30,6 +30,8 @@ public class Cache implements Iterable<CacheItem>{
 
     private int addCount = 0;
     private int numNewItems = 0;
+    private int numFileAdded = 0;
+    private int numFileRemoved = 0;
     
     public Cache(int cacheSize, CacheReplacement pol, String start, String end, int rep) {
         assert(start !=null);
@@ -69,8 +71,10 @@ public class Cache implements Iterable<CacheItem>{
         String fileName = cacheItem.getFileName();
         if (isFull())
             bumpOutItem(cdate);
+        numFileRemoved++;
         if (!cacheTable.contains(cacheItem))
             cacheTable.put(fileName, cacheItem);
+        numFileAdded++;
         size++;
     }
 
@@ -201,7 +205,16 @@ public class Cache implements Iterable<CacheItem>{
         numNewItems = 0;
         return oldcis;
     }
-    
+    public int resetNumFileAdded(){
+        int oldFileAdded = numFileAdded;
+        numFileAdded = 0;
+        return oldFileAdded;
+    }
+    public int resetNumFileRemoved(){
+        int oldFileRemoved = numFileRemoved;
+        numFileRemoved = 0;
+        return oldFileRemoved;
+    }
 
     
     /**

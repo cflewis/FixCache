@@ -76,6 +76,7 @@ public class Simulator {
     int outputSpacing = 3; // output the hit rate every 3 months
     int month = outputSpacing;
     CsvWriter csvWriter;
+    CsvWriter writeCommitInfo;
     int fileCount; // XXX where is this set? why static?---This is no longer used now
     String filename;
 
@@ -133,6 +134,23 @@ public class Simulator {
                 // csvWriter.write("NumFiles"); // uncomment if using findfilecountquery
                 csvWriter.write("NumBugFixes");
                 csvWriter.write("FilesProcessed");
+                csvWriter.endRecord();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            
+            writeCommitInfo = new CsvWriter("Results/" + filename + "_commitinfo.csv");
+            csvWriter.setComment('#');
+            try {
+                csvWriter.writeComment("number of files added and removed for each commit");
+                csvWriter.writeComment("project: " + pid + ", cachesize: "
+                        + cachesize + ", blocksize: " + cachesize
+                        + ", prefetchsize: " + prefetchsize
+                        + ", cache replacement policy: " + cacheRep);
+                csvWriter.write("Commit");
+                //csvWriter.write("Range");
+                csvWriter.write("NumAdded");
+                csvWriter.write("NumRemoved");
                 csvWriter.endRecord();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -260,7 +278,8 @@ public class Simulator {
                             || cdate.equals(cache.endDate)) {
                         outputHitRate(cdate);
                     }
-                }                   
+                }
+                outputCommitInfo(cid);
             }      
         } catch (Exception e) {
             System.out.println(e);
@@ -271,6 +290,16 @@ public class Simulator {
     private void incCommits() {
         commits++;
         totalcommits++;
+    }
+    
+    private void outputCommitInfo(int commitId){
+        try{
+            writeCommitInfo.write(String.valueOf(commitId));
+            writeCommitInfo.write(String.valueOf(cache.resetNumFileAdded()));
+            writeCommitInfo.write(String.valueOf(cache.resetNumFileRemoved()));
+        }catch (IOException e) {
+            System.out.println(e);
+            e.printStackTrace();}
     }
 
     private void outputHitRate(String cdate) {

@@ -6,11 +6,11 @@ import static org.junit.Assert.assertTrue;
 import java.sql.Connection;
 import java.util.ArrayList;
 
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import Util.TestHelper;
 
 import Cache.Cache;
 import Cache.CacheReplacement;

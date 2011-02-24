@@ -57,6 +57,7 @@ public class InputManager {
      */
     public void setStartDate(String start) {
         this.start = start;
+        checkParameter();
     }
 
     /**

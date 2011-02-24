@@ -6,12 +6,11 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.sql.Connection;
-
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import Util.TestHelper;
 
 import Cache.Cache;
 import Cache.CacheItem;
@@ -125,6 +124,7 @@ public class SimulatorTest {
         in.setStartDate("2009-10-24 07:51:22.0");
         Simulator sim3 = new Simulator(in);
         sim3.initialPreLoad();
+        //System.out.println(sim3.getCache().toString());
         sim3.simulate();
         rat = (int) (sim3.getHitRate());
         assertEquals(100, rat);
